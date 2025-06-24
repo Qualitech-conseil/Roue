@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Roue de la Fortune</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: Arial, sans-serif;
+      background: url('https://www.domaine-sol-payre.com/wp-content/uploads/restauration-copie.jpg') center/cover no-repeat;
+      overflow-x: hidden;
+      position: relative;
+    }
+    .overlay {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .content {
+      position: relative; z-index: 1;
+      color: white; text-align: center;
+      padding: 20px 20px 0;
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh; box-sizing: border-box;
+    }
+    .content img {
+      width: 200px; max-width: 50vw;
+      height: auto; margin-bottom: 15px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #lot3count {
+      margin: 15px 0; font-weight: bold; font-size: 1.1rem;
+    }
+    canvas#wheel {
+      width: 90vw; height: 90vw;
+      max-width: 500px; max-height: 500px;
+      margin-top: 15px;
+    }
+    #indicator {
+      position: absolute;
+      top: calc(50% - 240px);
+      left: 50%;
+      width: 10px;
+      height: 50px;
+      background: red;
+      animation: swing 0.3s ease-in-out infinite alternate;
+      transform-origin: bottom center;
+      z-index: 5;
+      pointer-events: none;
+      border-radius: 5px;
+      transform: translateX(-50%) rotate(0deg);
+    }
+    @keyframes swing {
+      from { transform: translateX(-50%) rotate(-10deg); }
+      to { transform: translateX(-50%) rotate(10deg); }
+    }
+    #popup {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 9999; padding: 20px; box-sizing: border-box;
+    }
+    #popupContent {
+      background: white; color: black;
+      padding: 20px; border-radius: 10px;
+      width: 100%; max-width: 400px; box-sizing: border-box;
+    }
+    #popupContent input, #popupContent button {
+      width: 100%; padding: 12px; margin-top: 10px; font-size: 1em;
+      box-sizing: border-box;
+    }
+    .confetti {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 10000;
+    }
+    @media (max-width:600px) {
+      .content img { width: 150px; }
+      h1 { font-size: 1.3rem; }
+      #lot3count { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay"></div>
+  <div class="content">
+    <img src="logo.png" alt="Logo" />
+    <h1>Jouez et tentez votre chance en nous laissant un avis Google</h1>
+    <div id="lot3count">Le lot 3 (le plus important) n'a été gagné qu'une seule fois cette semaine.</div>
+    <canvas id="wheel" width="500" height="500"></canvas>
+    <div id="indicator"></div>
+  </div>
+  <div id="popup">
+    <div id="popupContent">
+      <h2 id="popupMessage">Veuillez laisser un avis Google pour pouvoir jouer.</h2>
+      <input type="email" id="emailInput" placeholder="Votre adresse e-mail" style="display:none;" />
+      <button id="popupBtn">Laisser un avis Google</button>
+    </div>
+  </div>
+  <canvas id="confettiCanvas" class="confetti"></canvas>
+  <script>
+    const gains = [
+      {label:'🎁 Lot 1',win:true, type:'lot1'},
+      {label:'😢 Perdu',win:false},
+      {label:'🎉 Lot 2',win:true, type:'lot2'},
+      {label:'😢 Perdu',win:false},
+      {label:'🏆 Lot 3',win:true, type:'lot3'},
+      {label:'😢 Perdu',win:false}
+    ];
+    const winLimits = {
+      lot1: {limit: 7, count: 0},
+      lot2: {limit: 2, count: 0},
+      lot3: {limit: 1, count: 0}
+    };
+    const canvas = document.getElementById('wheel');
+    const ctx = canvas.getContext('2d');
+    const center = canvas.width / 2;
+    const radius = center;
+    const anglePerSegment = 2 * Math.PI / gains.length;
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const confettiCtx = confettiCanvas.getContext('2d');
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+    function drawWheel(angle = 0) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(center, center);
+      ctx.rotate(angle);
+      ctx.translate(-center, -center);
+      for (let i = 0; i < gains.length; i++) {
+        const start = i * anglePerSegment;
+        const end = start + anglePerSegment;
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius, start, end);
+        ctx.fillStyle = ['#e6194b','#3cb44b','#ffe119','#4363d8','#f58231','#911eb4'][i % 6];
+        ctx.fill();
+        ctx.stroke();
+        ctx.save();
+        ctx.translate(center, center);
+        ctx.rotate(start + anglePerSegment / 2);
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'white';
+        ctx.font = '16px Arial';
+        ctx.fillText(gains[i].label, radius * 0.65, 0);
+        ctx.restore();
+      }
+      ctx.restore();
+    }
+    drawWheel();
+    const popup = document.getElementById('popup');
+    const popupMessage = document.getElementById('popupMessage');
+    const emailInput = document.getElementById('emailInput');
+    const popupBtn = document.getElementById('popupBtn');
+    let popupStep = 1;
+    popupBtn.onclick = () => {
+      if (popupStep === 1) {
+        window.open('https://g.page/r/YOUR-GOOGLE-REVIEW-LINK', '_blank');
+        popupMessage.innerText = "Vous pouvez maintenant tenter votre chance.";
+        popupBtn.innerText = "Tourner la roue";
+        popupStep = 2;
+      } else if (popupStep === 2) {
+        popup.style.display = 'none';
+        spinWheel();
+      }
+    };
+    function spinWheel() {
+      const totalRotation = Math.random() * 360 + 1440;
+      const duration = 4000;
+      const start = performance.now();
+      function animate(time) {
+        const progress = Math.min((time - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const angle = (totalRotation * ease) * Math.PI / 180;
+        drawWheel(angle);
+        if (progress < 1) requestAnimationFrame(animate);
+        else showResult(angle);
+      }
+      requestAnimationFrame(animate);
+    }
+    function showResult(finalAngle) {
+      const normalized = (2 * Math.PI - finalAngle % (2 * Math.PI)) % (2 * Math.PI);
+      const index = Math.floor((normalized + anglePerSegment / 2) / anglePerSegment) % gains.length;
+      const result = gains[index];
+      if (result.win && winLimits[result.type].count >= winLimits[result.type].limit) {
+        popupMessage.innerText = "Désolé, vous avez perdu cette fois-ci.";
+        emailInput.style.display = 'none';
+        popupBtn.innerText = "Fermer";
+        popupBtn.onclick = () => popup.style.display = 'none';
+      } else if (result.win) {
+        winLimits[result.type].count++;
+        popupMessage.innerText = `Félicitations ! Vous avez gagné : ${result.label}`;
+        emailInput.style.display = 'block';
+        popupBtn.innerText = "Envoyer";
+        popupBtn.onclick = () => {
+          const email = emailInput.value.trim();
+          if (!email) return alert("Merci de renseigner votre adresse e-mail.");
+          const subject = encodeURIComponent(`[Nom du restaurant] – Vous avez gagné : ${result.label}`);
+          const body = encodeURIComponent(`Bravo, vous avez remporté le lot suivant : ${result.label}. Votre gain est valable une semaine.`);
+          window.location.href = `mailto:restaurant@example.com?cc=${email}&subject=${subject}&body=${body}`;
+        };
+        launchConfetti();
+      } else {
+        popupMessage.innerText = "Désolé, vous avez perdu cette fois-ci.";
+        emailInput.style.display = 'none';
+        popupBtn.innerText = "Fermer";
+        popupBtn.onclick = () => popup.style.display = 'none';
+      }
+      popup.style.display = 'flex';
+    }
+    function launchConfetti() {
+      const confetti = [];
+      for (let i = 0; i < 150; i++) {
+        confetti.push({
+          x: Math.random() * confettiCanvas.width,
+          y: Math.random() * -confettiCanvas.height,
+          r: Math.random() * 6 + 4,
+          d: Math.random() * 10 + 4,
+          color: ['#f00','#0f0','#00f','#ff0'][Math.floor(Math.random()*4)],
+          tilt: Math.random() * 10 - 5
+        });
+      }
+      function draw() {
+        confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        confetti.forEach(p => {
+          confettiCtx.beginPath();
+          confettiCtx.fillStyle = p.color;
+          confettiCtx.ellipse(p.x, p.y, p.r, p.r/2, p.tilt, 0, 2*Math.PI);
+          confettiCtx.fill();
+          p.y += p.d / 2;
+          p.tilt += 0.1;
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+  </script>
+</body>
+</html>

@@ -44,7 +44,7 @@
     }
     #indicator {
       position: absolute;
-      top: calc(50% - 240px);
+      top: calc(50% - 340px);
       left: 50%;
       width: 10px;
       height: 50px;
@@ -54,7 +54,7 @@
       z-index: 5;
       pointer-events: none;
       border-radius: 5px;
-      transform: translateX(-50%) rotate(0deg);
+      transform: translateX(-50%) rotate(180deg);
     }
     @keyframes swing {
       from { transform: translateX(-50%) rotate(-10deg); }
@@ -93,7 +93,7 @@
   <div class="content">
     <img src="logo.png" alt="Logo" />
     <h1>Jouez et tentez votre chance en nous laissant un avis Google</h1>
-    <div id="lot3count">Le lot 3 (le plus important) n'a été gagné qu'une seule fois cette semaine.</div>
+    <div id="lot3count">Le lot 3 n'a été gagné qu'une seule fois cette semaine.</div>
     <canvas id="wheel" width="500" height="500"></canvas>
     <div id="indicator"></div>
   </div>

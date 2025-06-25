@@ -44,7 +44,7 @@
     }
     #indicator {
       position: absolute;
-      top: calc(50% - 340px);
+      top: calc(50% - 240px);
       left: 50%;
       width: 10px;
       height: 50px;
@@ -54,7 +54,7 @@
       z-index: 5;
       pointer-events: none;
       border-radius: 5px;
-      transform: translateX(-50%) rotate(180deg);
+      transform: translateX(-50%) rotate(0deg);
     }
     @keyframes swing {
       from { transform: translateX(-50%) rotate(-10deg); }
@@ -93,7 +93,7 @@
   <div class="content">
     <img src="logo.png" alt="Logo" />
     <h1>Jouez et tentez votre chance en nous laissant un avis Google</h1>
-    <div id="lot3count">Le lot 3 n'a été gagné qu'une seule fois cette semaine.</div>
+    <div id="lot3count">Le lot 3 (le plus important) n'a été gagné qu'une seule fois cette semaine.</div>
     <canvas id="wheel" width="500" height="500"></canvas>
     <div id="indicator"></div>
   </div>
@@ -108,11 +108,11 @@
   <script>
     const gains = [
       {label:'🎁 Lot 1',win:true, type:'lot1'},
-      {label:'😢 Perdu',win:false},
+      {label:'😢 Perdu',win:false, type:'none'},
       {label:'🎉 Lot 2',win:true, type:'lot2'},
-      {label:'😢 Perdu',win:false},
+      {label:'😢 Perdu',win:false, type:'none'},
       {label:'🏆 Lot 3',win:true, type:'lot3'},
-      {label:'😢 Perdu',win:false}
+      {label:'😢 Perdu',win:false, type:'none'}
     ];
     const winLimits = {
       lot1: {limit: 7, count: 0},
@@ -192,6 +192,7 @@
       const normalized = (2 * Math.PI - currentAngle % (2 * Math.PI)) % (2 * Math.PI);
       const index = Math.floor((normalized + anglePerSegment / 2) / anglePerSegment) % gains.length;
       const result = gains[index];
+      const actualLabel = result.label;
       if (result.win && winLimits[result.type].count >= winLimits[result.type].limit) {
         popupMessage.innerText = "Désolé, vous avez perdu cette fois-ci.";
         emailInput.style.display = 'none';
@@ -199,14 +200,14 @@
         popupBtn.onclick = () => popup.style.display = 'none';
       } else if (result.win) {
         winLimits[result.type].count++;
-        popupMessage.innerText = `Félicitations ! Vous avez gagné : ${result.label}`;
+        popupMessage.innerText = `Félicitations ! Vous avez gagné : ${actualLabel}`;
         emailInput.style.display = 'block';
         popupBtn.innerText = "Envoyer";
         popupBtn.onclick = () => {
           const email = emailInput.value.trim();
           if (!email) return alert("Merci de renseigner votre adresse e-mail.");
-          const subject = encodeURIComponent(`[Nom du restaurant] – Vous avez gagné : ${result.label}`);
-          const body = encodeURIComponent(`Bravo, vous avez remporté le lot suivant : ${result.label}. Votre gain est valable une semaine.`);
+          const subject = encodeURIComponent(`[Nom du restaurant] – Vous avez gagné : ${actualLabel}`);
+          const body = encodeURIComponent(`Bravo, vous avez remporté le lot suivant : ${actualLabel}. Votre gain est valable une semaine.`);
           window.location.href = `mailto:restaurant@example.com?cc=${email}&subject=${subject}&body=${body}`;
         };
         launchConfetti();

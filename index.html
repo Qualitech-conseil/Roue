@@ -128,6 +128,8 @@
     const confettiCtx = confettiCanvas.getContext('2d');
     confettiCanvas.width = window.innerWidth;
     confettiCanvas.height = window.innerHeight;
+    let currentAngle = 0;
+
     function drawWheel(angle = 0) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.save();
@@ -179,14 +181,15 @@
         const progress = Math.min((time - start) / duration, 1);
         const ease = 1 - Math.pow(1 - progress, 3);
         const angle = (totalRotation * ease) * Math.PI / 180;
+        currentAngle = angle;
         drawWheel(angle);
         if (progress < 1) requestAnimationFrame(animate);
-        else showResult(angle);
+        else showResult();
       }
       requestAnimationFrame(animate);
     }
-    function showResult(finalAngle) {
-      const normalized = (2 * Math.PI - finalAngle % (2 * Math.PI)) % (2 * Math.PI);
+    function showResult() {
+      const normalized = (2 * Math.PI - currentAngle % (2 * Math.PI)) % (2 * Math.PI);
       const index = Math.floor((normalized + anglePerSegment / 2) / anglePerSegment) % gains.length;
       const result = gains[index];
       if (result.win && winLimits[result.type].count >= winLimits[result.type].limit) {
